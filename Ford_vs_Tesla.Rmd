@@ -1,0 +1,318 @@
+---
+title: "Ford vs Tesla"
+author: "Hassaan"
+date: '2022-07-09'
+output:
+  html_document:
+    number_sections: true
+    toc: true
+    fig_width: 8
+    fig_height: 5
+    theme: cosmo
+    highlight: tango
+    code_folding: hide
+---
+# Introduction
+**Ford** has been an oldest name in the automobile industry with its name engraved in gold in almost all the categories of vehicles. From sport to family cars, *Ford* has been an embodiment of success. However, with the rise of climate crisis and along with it, Elon musk, Ford got a tough competition. **Tesla** stepped in the automobile industry in 2010 and the stats after that in the stock market are worth having a look at.
+
+# Analysis Summary
+In this report, we will be comparing Ford and Tesla, on company basis. It might not be as interesting as having them race on LeMans but its interesting enough to see different aspects changing the stats of their company values significantly. We will perform analysis on following parameters;
+
+1. Number of Shares traded by both companies.
+2. Stock price of both companies.
+
+We will dig deep down into these parameters and generate some useful insights.
+
+## Preparing data
+
+The first process is to cleanse and prepare data for a smooth analysis. This process is an amalgam of tasks that need to be performed for successful results. We will move along the code to be able to understand all the necessary steps.
+
+### Loading the Libraries
+
+```{r message = FALSE}
+library(dplyr)
+library(tidyverse)
+library(kableExtra)
+library(knitr)
+```
+
+### Reading CSV files
+
+These files are taken from **Kaggle** data set in the form of CSV's.
+
+```{r message = FALSE}
+Ford <- read.csv("D:/Data_Analytics/F.csv")
+Tesla <- read.csv("D:/Data_Analytics/Tesla.csv")
+```
+
+### Table Review
+
+We selected 50 random samples from the tables we loaded to get a look on our data.
+We have the following attributes in both our datasets. 
+
+1. Date
+2. Open (The price at which stock was opened at the corresponding date)
+3. Close (The price at which stock was closed at the corresponding date)
+4. High (The highest price of the stock at the corresponding date)
+5. Low (The lowest price of the stock at the corresponding date)
+6. Adj. close (Adjusted Close price, a more accurate value of the stock)
+7. Volume (The number of shares traded)
+
+
+
+```{r echo = FALSE}
+table1 <- Ford %>% sample_n(50)  %>%  
+  kbl(caption = '*Table_1_Ford*') %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = F, position = "center") %>% 
+  row_spec(0, bold = TRUE, color = "white", background = "#1974D2") %>% 
+  kable_minimal() %>%
+  scroll_box(width = "800px", height = "200px")
+
+table2 <- Tesla %>% sample_n(50)  %>%  
+  kbl(caption = '*Table_2_Tesla*') %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = F, position = "center") %>% 
+  row_spec(0, bold = TRUE, color = "white", background = "#1974D2") %>% 
+  kable_minimal() %>%
+  scroll_box(width = "800px", height = "200px")
+
+kables(list(table1))
+kables(list(table2))
+```
+
+
+### Remove the rows with null values
+
+Any row that contains a null value should be removed as it can disrupt the trends necessary for a trustworthy analysis. They cannot be filled as this data is obtained from a third party.
+
+
+```{r message = FALSE}
+Ford <- na.omit(Ford)
+Tesla <- na.omit(Tesla)
+```
+
+### Rounding the numbers to two digits after the decimal
+
+Since currencies are measured up-to 2 decimal places, therefore the numeric values are rounded off to 2 decimal places to get a better understanding of our trends.
+
+
+```{r message = FALSE, results = 'hide'}
+Ford <- Ford %>% mutate_if(is.numeric, ~round(., 2))
+Tesla <- Tesla %>% mutate_if(is.numeric, ~round(., 2))
+```
+
+### Tables after rounding off.
+
+We will have a look at our data after some modifications by taking out random 50 samples out of our tables.
+
+```{r echo = FALSE, fig.align='center'}
+table3 <- Ford %>% sample_n(50)  %>%  
+  kbl(caption = '*Table_1_Ford*') %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = F, position = "center") %>% 
+  row_spec(0, bold = TRUE, color = "white", background = "#1974D2") %>% 
+  kable_minimal() %>%
+  scroll_box(width = "800px", height = "200px")
+
+table4 <- Tesla %>% sample_n(50)  %>%  
+  kbl(caption = '*Table_2_Tesla*') %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = F, position = "center") %>% 
+  row_spec(0, bold = TRUE, color = "white", background = "#1974D2") %>% 
+  kable_minimal() %>%
+  scroll_box(width = "800px", height = "200px")
+
+kables(list(table3))
+kables(list(table4))
+```
+
+### Add Year and Name coloumns in table
+
+To get a clear sense of what the stats present, we need to introduce a discriminator as the attributes for both the tables are same. Thus **Name** column is introduced for clarification. **Year** column is introduced by extracting *year* from *date* for better summary of our data.
+
+```{r message = FALSE}
+Ford$year <- format(as.Date(Ford$Date, format="%m/%d/%Y"),"%Y")
+Ford$Name <-  "Ford"
+
+Tesla$year <- format(as.Date(Tesla$Date, format = "%m/%d/%Y"), "%Y")
+Tesla$Name <-  "Tesla"
+```
+
+### Combining both Tables
+
+Merging both tables to get a single table.
+
+```{r message = FALSE}
+Automobiles <- rbind(Ford, Tesla)
+```
+
+### Display Table
+
+This is the table that will be used to generate all the necessary insights from the data.
+
+```{r echo = FALSE}
+table3 <- Automobiles %>% sample_n(50)  %>%  
+  kbl(caption = '*Table_3*') %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = F, position = "center") %>% 
+  row_spec(0, bold = TRUE, color = "white", background = "#1974D2") %>% 
+  kable_minimal() %>%
+  scroll_box(width = "800px", height = "200px")
+
+kables(list(table3))
+```
+
+### Exporting the file for Analysis
+
+Exporting the tables in CSV format to take the analysis to Tableau.
+
+```{r message = FALSE}
+write.csv(Automobiles, "D:/Data_Analytics/Ford_vs_Tesla.csv")
+```
+
+## Number of Shares traded by each company till 2021
+
+### Graph Description
+
+A pie chart representing number of share traded by each company.
+Parameter used for mapping is **"Volume"**
+
+
+```{r message = FALSE, warning = FALSE, echo = FALSE, out.width = "100%"}
+knitr::include_graphics("D:/Data_Analytics/Ford VS Tableau Sheets/Total Shares Traded.png")
+```
+
+### Results Obtained
+
+1. Total shares traded by both companies = 354,290,205,220
+2. Total shares traded by Ford = 264,859,461,820
+3. Total shares traded by Tesla = 89,430,743,400
+4. Percentage of shares traded by Ford = 74.76%
+5. Percentage of shares traded by Tesla = 25.24%
+
+
+## Number of Shares traded by both companies per Year
+
+### Graph Description
+
+An area chart representing the number of shares traded per Year by both companies.
+Parameters used for mapping are **"Volume"** and **"Year"**
+
+
+```{r message = FALSE, warning = FALSE, echo = FALSE, out.width = "100%"}
+knitr::include_graphics("D:/Data_Analytics/Ford VS Tableau Sheets/Total Shares Traded per Year.png")
+```
+
+### Results Obtained
+
+1. Minimum amount of shares traded = 253,367,547
+2. Year in which minimum amount of shares were traded = 1972
+3. Maximum amount of shares traded = 38,460,025,200
+4. Year in which maximum amount of shares were traded = 2020
+5. Average of traded shares increased after 2005.
+
+
+## Number of Shares Traded per Year per Company
+
+### Graph Description
+
+A multiple line graph showing the number of traded shares of both companies per Year.
+Parameters used for mapping are **"Volume"** and **"Year"**
+
+
+```{r message = FALSE, warning = FALSE, echo = FALSE, out.width = 1000}
+knitr::include_graphics("D:/Data_Analytics/Ford VS Tableau Sheets/Shares Traded per Year per Company.png")
+```
+
+### Results Obtained
+
+1. Tesla stepped into market in 2010.
+2. Ford saw a huge decline in its trading volume the year Tesla stepped into the market.
+3. Tesla's trading volume reached Ford's in 2013.
+4. Both companies observed a significant hike in trading volume in the year 2020.
+5. Both companies observed a significant decline in trading volume in the year 2021.
+
+
+## Percent of Shares Traded per Year per Company
+
+### Graph Description
+
+A multiple pie chart showing the percent of traded shares of both companies per Year.
+Parameters used for mapping are **"Volume"** and **"Year"**
+
+
+```{r message = FALSE, warning = FALSE, echo = FALSE, out.width = 1000}
+knitr::include_graphics("D:/Data_Analytics/Ford VS Tableau Sheets/Percent of Shares Traded per Year per Company.png")
+```
+
+### Results Obtained
+
+1. Tesla stepped into the market with a total traded share percentage of 4.14%
+2. Tesla saw a huge spike in its trading volume in 2019 with 54.46% of total shares traded.
+3. Tesla's trading volume stayed near to half of the total trading volume of both companies after 2012.
+
+## Ford vs Tesla Stock Price
+
+### Graph Description
+
+A multiple line graph showing the average of open stock price of both companies per Year.
+Parameters used for mapping are **"Open Stock Price"** and **"Year"**
+
+
+```{r message = FALSE, warning = FALSE, echo = FALSE, out.width = 1000}
+knitr::include_graphics("D:/Data_Analytics/Ford VS Tableau Sheets/Stock Price_Ford vs Tesla.png")
+```
+
+### Results Obtained
+
+1. Lowest stock price of Ford = 0.8 dollars
+2. Year of Ford's lowest stock price = 1981
+3. Highest stock price of Ford = 30.6 dollars
+4. Year of Ford's lowest stock price = 1999
+5. Lowest stock price of Tesla = 4.7 dollars
+6. Year of Ford's lowest stock price = 2010
+7. Highest stock price of Ford = 706 dollars
+8. Year of Ford's lowest stock price = 2021
+9. Ford's stock price stayed above 20 dollars from 1998 to 2001 and stayed steady otherwise.
+10. Tesla's stock price started at 4.7 dollars in 2010 and reached 706 dollars in 2021.
+11. In the year 2021, the stock price of Tesla was 693 dollars more than Ford's.
+
+## Ford: Stock price and Traded Shares Correlation
+
+### Graph Description
+
+A scatter plot showing the relationship between volume of shares traded and stock price of Ford.
+Parameters used for mapping are **"Volume"** and **"Open Stock Price"**
+
+```{r message = FALSE, warning = FALSE, echo = FALSE, out.width = 1000}
+knitr::include_graphics("D:/Data_Analytics/Ford VS Tableau Sheets/Ford Correlation.png")
+```
+
+### Results Obtained
+
+1. Coefficient of Correlation is 0.08, proving that there is no relationship between volume of trades and stock price.
+2. Minimum number of shares traded are 299,011 at 2.12 dollars.
+3. Maximum number of shares traded are 541,175,600 at 4.77 dollars.
+
+
+## Tesla: Stock price and Traded Shares Correlation
+
+### Graph Description
+
+A scatter plot showing the relationship between volume of shares traded and stock price of Tesla.
+Parameters used for mapping are **"Volume"** and **"Open Stock Price"**
+
+```{r message = FALSE, warning = FALSE, echo = FALSE, out.width = 1000}
+knitr::include_graphics("D:/Data_Analytics/Ford VS Tableau Sheets/Tesla Correlation.png")
+```
+
+### Results Obtained
+
+1. Coefficient of Correlation is 0.14, proving that there is no relationship between volume of trades and stock price.
+2. Minimum number of shares traded are 592,500 at 4.2 dollars.
+3. Maximum number of shares traded are 304,694,000 at 176.6 dollars.
+
+
+# Final Analysis
+
+1. Although Ford has been in the market for comparatively longer time, but Tesla has given Ford a tough competition since its beginning.
+2. The birth year of Tesla i.e. 2010, brought a huge dip in Ford's share trade volume.
+3. In the year 2021, the stock price of Tesla was 693 dollars more than Ford's.
+
+All these results are interesting enough to dig even deeper and find the causalities. This report has helped us get an overall view of the performance of both these companies and provided a brief Ford VS Tesla comparison.
